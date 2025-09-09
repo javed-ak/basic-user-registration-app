@@ -1,9 +1,12 @@
 "use client"
+
 import Button from "@/components/Button";
 import UpdateForm from "@/components/UpdateForm";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface User {
   id: number;
@@ -15,7 +18,7 @@ interface User {
 export default function Home() {
   const [users, setUsers] = useState<User[]>([]);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchUser();
@@ -34,61 +37,73 @@ export default function Home() {
     }
   }
 
+  const handleUpdateSuccess = async () => {
+    await fetchUser();
+    toast.success('✅ User updated successfully');
+  };
+
+  const handleUpdateError = (message: string) => {
+    toast.error(`⚠️ ${message}`);
+    setEditingUser(null); // Close the form automatically
+  };
+
   return (
     <div className="container m-auto pt-5">
-      {loading? (
+      <ToastContainer position="top-right" />
+
+      {loading ? (
         <div className="h-screen w-full flex justify-center items-center">Loading...</div>
       ) : (
         <div>
           <div className="flex justify-between">
-          <h1 className="text-xl font-bold">Registered Users</h1>
-          <Link href={'/user/register'}>
-            <Button ButtonText="Register" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-5 font-bold text-lg border-b py-1 mb-1">
-          <div>Sr. No.</div>
-          <div>First Name</div>
-          <div>Last Name</div>
-          <div>Email</div>
-          <div>Actions</div>
-        </div>
-
-        {users.map((user: User, index: number) => (
-          <div key={user.id} className="grid grid-cols-5 items-center border-b py-2">
-            <div>{index + 1}</div> {/* Sequential number */}
-            <div>{user.firstName}</div>
-            <div>{user.lastName}</div>
-            <div>{user.email}</div>
-
-            <div className="flex space-x-4">
-              <button
-                onClick={() => setEditingUser(user)}
-                title="Edit"
-                className="text-blue-500 text-xl cursor-pointer"
-              >
-                ✏️
-              </button>
-
-              <button
-                onClick={() => handleDelete(user.id)}
-                title="Delete"
-                className="text-red-500 text-xl cursor-pointer"
-              >
-                🗑️
-              </button>
-            </div>
+            <h1 className="text-xl font-bold">Registered Users</h1>
+            <Link href={'/user/register'}>
+              <Button ButtonText="Register" />
+            </Link>
           </div>
-        ))}
 
-        {editingUser && (
-          <UpdateForm
-            user={editingUser}
-            onUpdateSuccess={fetchUser}
-            onClose={() => setEditingUser(null)}
-          />
-        )}
+          <div className="grid grid-cols-5 font-bold text-lg border-b py-1 mb-1">
+            <div>Sr. No.</div>
+            <div>First Name</div>
+            <div>Last Name</div>
+            <div>Email</div>
+            <div>Actions</div>
+          </div>
+
+          {users.map((user: User, index: number) => (
+            <div key={user.id} className="grid grid-cols-5 items-center border-b py-2">
+              <div>{index + 1}</div>
+              <div>{user.firstName}</div>
+              <div>{user.lastName}</div>
+              <div>{user.email}</div>
+
+              <div className="flex space-x-4">
+                <button
+                  onClick={() => setEditingUser(user)}
+                  title="Edit"
+                  className="text-blue-500 text-xl cursor-pointer"
+                >
+                  ✏️
+                </button>
+
+                <button
+                  onClick={() => handleDelete(user.id)}
+                  title="Delete"
+                  className="text-red-500 text-xl cursor-pointer"
+                >
+                  🗑️
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {editingUser && (
+            <UpdateForm
+              user={editingUser}
+              onUpdateSuccess={handleUpdateSuccess}
+              onClose={() => setEditingUser(null)}
+            />
+          )}
         </div>
       )}
     </div>
